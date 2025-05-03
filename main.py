@@ -132,4 +132,37 @@ def display_date_wise_exam_routine():
         print("")
 
 
-display_date_wise_exam_routine()
+
+def get_exam_by_date_for_student(date_str, student_id):
+    try:
+        input_date = datetime.strptime(date_str, "%Y-%m-%d").strftime("%d-%b-%Y")
+    except ValueError:
+        print("Invalid date format. Use YYYY-MM-DD.")
+        return
+
+    enrollment = next((e for e in enrollments if e["student_id"] == student_id), None)
+    if not enrollment:
+        print("Student not found or not enrolled.")
+        return
+
+    semester_id = enrollment["semester_id"]
+    subject_ids = enrollment["subject_ids"]
+
+    exams_today = [
+        exam for exam in exam_routines
+        if exam["semester_id"] == semester_id and
+           exam["subject_id"] in subject_ids and
+           datetime.strptime(exam["date"], "%Y-%m-%d").strftime("%d-%b-%Y") == input_date
+    ]
+
+    student_name = next((s["name"] for s in students if s["id"] == student_id), "Unknown")
+
+    print(f"\nExam schedule for {student_name} on {input_date}:")
+    if not exams_today:
+        print("  No exam scheduled.")
+    else:
+        for exam in exams_today:
+            subject = next(s for s in subjects if s["id"] == exam["subject_id"])
+            print(f"  {subject['code']} - {subject['name']}")
+
+get_exam_by_date_for_student("2025-05-12", 1)
